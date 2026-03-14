@@ -354,12 +354,19 @@
 
         // 动态更新所有文本
         function updateTexts() {
-            document.getElementById('home-title').textContent = t('homeTitle');
-            document.getElementById('home-subtitle').textContent = t('homeSubtitle');
-            document.getElementById('home-target-hint').textContent = t('homeTargetHint') + ' ' + TARGET_SUM;
-            document.getElementById('game-target-hint').textContent = t('gameTargetHint') + ' ' + TARGET_SUM;
-            document.querySelector('.stat-label').textContent = t('totalScore');
-            document.querySelector('.level-badge').textContent = t('levelPrefix') + ' ' + currentLevel + ' ' + t('levelSuffix');
+            const homeTitle = document.getElementById('home-title');
+            const homeSubtitle = document.getElementById('home-subtitle');
+            const homeTargetHint = document.getElementById('home-target-hint');
+            const gameTargetHint = document.getElementById('game-target-hint');
+            const statLabel = document.querySelector('.stat-label');
+            const levelBadge = document.querySelector('.level-badge');
+            
+            if (homeTitle) homeTitle.textContent = t('homeTitle');
+            if (homeSubtitle) homeSubtitle.textContent = t('homeSubtitle');
+            if (homeTargetHint) homeTargetHint.textContent = t('homeTargetHint') + ' ' + TARGET_SUM;
+            if (gameTargetHint) gameTargetHint.textContent = t('gameTargetHint') + ' ' + TARGET_SUM;
+            if (statLabel) statLabel.textContent = t('totalScore');
+            if (levelBadge) levelBadge.textContent = t('levelPrefix') + ' ' + currentLevel + ' ' + t('levelSuffix');
             updateTargetLabels();
         }
 
@@ -1115,8 +1122,16 @@
 
         // 初始化
         window.onload = () => { 
-            loadProgress(); 
-            renderHome(); 
+            try {
+                loadProgress(); 
+            } catch(e) {
+                console.error('loadProgress error:', e);
+            }
+            try {
+                renderHome(); 
+            } catch(e) {
+                console.error('renderHome error:', e);
+            }
             setupPWA(); // 启动 PWA 服务
         };
         
