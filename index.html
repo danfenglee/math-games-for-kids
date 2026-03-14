@@ -144,6 +144,15 @@
             font-size: 1.4rem; font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
             transition: top 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), left 0.3s ease, transform 0.1s;
             box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.3); z-index: 2;
+            /* 移动端触摸优化：最小触摸区域 48x48px */
+            min-width: 48px; min-height: 48px;
+        }
+
+        /* 移动端响应式调整 */
+        @media (max-width: 480px) {
+            .level-btn { min-width: 48px; min-height: 48px; }
+            .icon-btn { width: 48px; height: 48px; }
+            .settings-btn { width: 48px; height: 48px; }
         }
         .tile.selected {
             z-index: 10; border: 2px solid white;
@@ -228,6 +237,7 @@
             <button class="settings-btn" style="top: -10px; right: 70px;" onclick="toggleLanguage()" title="Language">🌐</button>
             <h1 class="home-title" id="home-title">Number Match</h1>
             <p class="home-subtitle" id="home-subtitle">Connect numbers that sum to</p>
+            <p class="target-hint" id="home-target-hint">Current target: Connect numbers = 10</p>
             <div class="level-grid" id="level-grid"></div>
         </div>
 
@@ -542,13 +552,20 @@
             openSettings();
             // 同时更新主页显示
             updateTexts();
+            // 尝试播放声音（用户已有点击交互，音频上下文应该可用）
+            try { playSound('select'); } catch(e) {}
         }
 
         function toggleLanguage() {
             currentLang = currentLang === 'en' ? 'zh' : 'en';
             localStorage.setItem('plus_math_lang', currentLang);
             updateTexts();
-            playSound('select');
+            // 如果设置弹窗是打开的，刷新它以更新语言按钮状态
+            if (modalOverlay.style.display === 'flex') {
+                openSettings();
+            }
+            // 尝试播放声音（如果用户还没有交互过音频上下文，这可能会失败但不影响功能）
+            try { playSound('select'); } catch(e) {}
         }
 
         function saveTargetSettings() {
