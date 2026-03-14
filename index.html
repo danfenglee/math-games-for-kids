@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- 新增：状态栏主题色，让它看起来更像原生 App -->
     <meta name="theme-color" content="#1e3c72">
-    <title>凑数大挑战 - 跨平台动态算式版</title>
+    <title>Number Match - Brain Challenge</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
@@ -224,22 +224,24 @@
     <div class="app-container">
         <!-- ----- 首页选关界面 ----- -->
         <div id="home-screen">
-            <button class="settings-btn" onclick="openSettings()" title="设置目标分数">⚙️</button>
-            <h1 class="home-title">凑数大挑战</h1>
-            <p class="home-subtitle" id="home-target-hint">当前目标：连线相加 = 10</p>
+            <button class="settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
+            <button class="settings-btn" style="top: -10px; right: 70px;" onclick="toggleLanguage()" title="Language">🌐</button>
+            <h1 class="home-title" id="home-title">Number Match</h1>
+            <p class="home-subtitle" id="home-subtitle">Connect numbers that sum to</p>
             <div class="level-grid" id="level-grid"></div>
         </div>
 
         <!-- ----- 游戏主界面 ----- -->
         <div id="game-screen">
             <div id="top-nav">
-                <button class="icon-btn" onclick="showHome()" title="返回首页">🏠</button>
+                <button class="icon-btn" onclick="showHome()" title="Back to Home">🏠</button>
+                <button class="icon-btn" onclick="toggleLanguage()" title="Language">🌐</button>
                 <div class="level-badge-container">
-                    <span class="level-badge" id="level-badge">第 1 关</span>
-                    <span class="target-hint" id="game-target-hint">🎯 找数字相加 = 10</span>
+                    <span class="level-badge" id="level-badge">Level 1</span>
+                    <span class="target-hint" id="game-target-hint">🎯 Connect numbers = 10</span>
                 </div>
-                <button class="icon-btn ai-btn" onclick="askAIHelper()" title="问问本地魔法精灵">🤖</button>
-                <button class="icon-btn" onclick="restartLevel()" title="重新开始本关">↻</button>
+                <button class="icon-btn ai-btn" onclick="askAIHelper()" title="Magic Helper">🤖</button>
+                <button class="icon-btn" onclick="restartLevel()" title="Restart Level">↻</button>
             </div>
 
             <div id="header">
@@ -277,7 +279,91 @@
     </div>
 
     <script>
-        // --- 核心动态目标配置 ---
+        // --- 多语言支持 ---
+        const i18n = {
+            en: {
+                homeTitle: "Number Match",
+                homeSubtitle: "Connect numbers that sum to",
+                levelPrefix: "Level",
+                levelSuffix: "",
+                targetSum: "Target",
+                totalScore: "Score",
+                remaining: "Remaining",
+                gameTargetHint: "🎯 Connect numbers =",
+                homeTargetHint: "Current target: Connect numbers =",
+                settingsTitle: "⚙️ Settings",
+                settingsTargetLabel: "Enter target number (10-100):",
+                cancel: "Cancel",
+                save: "Save",
+                winTitle: "Awesome!",
+                winDesc: "You cleared all numbers!",
+                stuckTitle: "Oops!",
+                stuckDesc: "No valid combinations left. Try again?",
+                backHome: "Back to Home",
+                nextLevel: "Next Level",
+                retry: "Retry",
+                aiHelperTitle: "🤖 Magic Helper",
+                aiHelperFound: "Magic Helper found: [ {path} ] = {target} ✨ Try it!",
+                aiHelperNotFound: "Hmm, no valid combinations found. You might need to restart this level! 🤔",
+                gotIt: "Got it",
+                language: "Language",
+                selectLanguage: "Select Language",
+                chinese: "中文",
+                english: "English",
+                levelComplete: "Completed Level"
+            },
+            zh: {
+                homeTitle: "凑数大挑战",
+                homeSubtitle: "连线数字相加等于",
+                levelPrefix: "第",
+                levelSuffix: "关",
+                targetSum: "目标",
+                totalScore: "总分数",
+                remaining: "剩余",
+                gameTargetHint: "🎯 找数字相加 =",
+                homeTargetHint: "当前目标：连线相加 =",
+                settingsTitle: "⚙️ 游戏设置",
+                settingsTargetLabel: "请输入新的通关目标数 (10 - 100):",
+                cancel: "取消",
+                save: "保存设置",
+                winTitle: "太棒啦！",
+                winDesc: "你成功清空了所有数字！",
+                stuckTitle: "哎呀！",
+                stuckDesc: "当前剩下的数字好像凑不出目标了，重试一次吧？",
+                backHome: "返回首页",
+                nextLevel: "下一关",
+                retry: "重新挑战",
+                aiHelperTitle: "🤖 魔法精灵来啦",
+                aiHelperFound: "魔法精灵偷偷观察了一下，发现把 [ {path} ] 连起来刚好是 {target} 哦！✨ 快去试试吧！",
+                aiHelperNotFound: "哎呀，当前好像没有合适的组合了，也许需要重新开始这一关哦！🤔",
+                gotIt: "我知道啦",
+                language: "语言",
+                selectLanguage: "选择语言",
+                chinese: "中文",
+                english: "English"
+            }
+        };
+
+        // 获取当前语言设置，默认英文
+        let currentLang = localStorage.getItem('plus_math_lang') || 'en';
+        
+        // 翻译函数
+        function t(key) {
+            return i18n[currentLang][key] || i18n['en'][key] || key;
+        }
+
+        // 动态更新所有文本
+        function updateTexts() {
+            document.getElementById('home-title').textContent = t('homeTitle');
+            document.getElementById('home-subtitle').textContent = t('homeSubtitle');
+            document.getElementById('home-target-hint').textContent = t('homeTargetHint') + ' ' + TARGET_SUM;
+            document.getElementById('game-target-hint').textContent = t('gameTargetHint') + ' ' + TARGET_SUM;
+            document.querySelector('.stat-label').textContent = t('totalScore');
+            document.querySelector('.level-badge').textContent = t('levelPrefix') + ' ' + currentLevel + ' ' + t('levelSuffix');
+            updateTargetLabels();
+        }
+
+        // 核心动态目标配置 ---
         let TARGET_SUM = parseInt(localStorage.getItem('plus_math_target')) || 10;
         
         const PALETTE = [
@@ -359,6 +445,7 @@
             const saved = localStorage.getItem('plus_math_unlocked');
             if (saved) unlockedLevel = parseInt(saved);
             updateTargetLabels();
+            updateTexts();
         }
 
         function saveProgress(level) {
@@ -369,8 +456,10 @@
         }
 
         function updateTargetLabels() {
-            homeTargetHint.textContent = `当前目标：连线相加 = ${TARGET_SUM}`;
-            gameTargetHint.textContent = `🎯 找数字相加 = ${TARGET_SUM}`;
+            const homeTargetHint = document.getElementById('home-target-hint');
+            const gameTargetHint = document.getElementById('game-target-hint');
+            if (homeTargetHint) homeTargetHint.textContent = t('homeTargetHint') + ' ' + TARGET_SUM;
+            if (gameTargetHint) gameTargetHint.textContent = t('gameTargetHint') + ' ' + TARGET_SUM;
         }
 
         // --- 新增：跨平台硬件震动反馈 (Haptic) ---
@@ -422,16 +511,37 @@
 
         function openSettings() {
             playSound('select');
-            modalTitle.textContent = "⚙️ 游戏设置"; modalTitle.style.color = "#4299e1";
+            modalTitle.textContent = t('settingsTitle'); modalTitle.style.color = "#4299e1";
             modalDesc.innerHTML = `
-                <p style="font-size:1rem; color:#718096; margin-bottom:10px;">请输入新的通关目标数 (10 - 100):</p>
+                <p style="font-size:1rem; color:#718096; margin-bottom:10px;">${t('settingsTargetLabel')}</p>
                 <input type="number" id="target-input" class="settings-input" value="${TARGET_SUM}" min="10" max="100">
+                <p style="font-size:1rem; color:#718096; margin:15px 0 10px 0;">${t('selectLanguage')}:</p>
+                <div style="display:flex; gap:10px; justify-content:center; margin-bottom:10px;">
+                    <button class="modal-btn ${currentLang === 'zh' ? '' : 'secondary'}" onclick="setLanguage('zh')" style="padding:10px 20px;">中文</button>
+                    <button class="modal-btn ${currentLang === 'en' ? '' : 'secondary'}" onclick="setLanguage('en')" style="padding:10px 20px;">English</button>
+                </div>
             `;
             modalActions.innerHTML = `
-                <button class="modal-btn secondary" onclick="closeModal()">取消</button>
-                <button class="modal-btn" onclick="saveTargetSettings()">保存设置</button>
+                <button class="modal-btn secondary" onclick="closeModal()">${t('cancel')}</button>
+                <button class="modal-btn" onclick="saveTargetSettings()">${t('save')}</button>
             `;
             modalOverlay.style.display = 'flex';
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('plus_math_lang', lang);
+            // 刷新设置界面的语言选项显示
+            openSettings();
+            // 同时更新主页显示
+            updateTexts();
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            localStorage.setItem('plus_math_lang', currentLang);
+            updateTexts();
+            playSound('select');
         }
 
         function saveTargetSettings() {
@@ -474,7 +584,7 @@
             }
         }
 
-        function showHome() { gameScreen.style.display = 'none'; homeScreen.style.display = 'flex'; renderHome(); }
+        function showHome() { gameScreen.style.display = 'none'; homeScreen.style.display = 'flex'; renderHome(); updateTexts(); }
         
         function restartLevel() { 
             initAudio(); 
@@ -599,7 +709,7 @@
             }
 
             modalOverlay.style.display = 'none'; homeScreen.style.display = 'none'; gameScreen.style.display = 'flex';
-            levelBadge.textContent = `第 ${level} 关`;
+            document.querySelector('.level-badge').textContent = t('levelPrefix') + ' ' + level + ' ' + (t('levelSuffix') || '');
             scoreEl.textContent = totalScore; // 同步更新右上角的总分UI
 
             // 每次加载关卡前，重新计算当前屏幕的最佳网格布局
@@ -622,7 +732,7 @@
         }
 
         function updateProgress() {
-            targetText.textContent = `剩余需消除数字: ${tilesRemaining}`;
+            targetText.textContent = t('remaining') + ' ' + t('targetSum') + ': ' + t('targetSum') + ' ' + tilesRemaining;
             let percent = (tilesRemaining / initialTiles) * 100;
             progressFill.style.width = percent + '%';
             if (percent < 30) progressFill.style.backgroundColor = '#ed8936'; 
@@ -887,18 +997,18 @@
             isLevelComplete = true; playSound('win'); saveProgress(currentLevel + 1);
             triggerVibrate([100, 50, 100, 50, 100]); // 过关强力庆祝震动
 
-            modalTitle.textContent = "太棒啦！"; modalTitle.style.color = "#48bb78";
-            modalDesc.innerHTML = `你成功清空了所有数字！<br>完成了第 <b>${currentLevel}</b> 关。`;
-            modalActions.innerHTML = `<button class="modal-btn secondary" onclick="showHome()">返回首页</button>` + 
-                (currentLevel < TOTAL_LEVELS ? `<button class="modal-btn" onclick="loadLevel(${currentLevel + 1})">下一关</button>` : '');
+            modalTitle.textContent = t('winTitle'); modalTitle.style.color = "#48bb78";
+            modalDesc.innerHTML = `${t('winDesc')}<br>${t('levelComplete')} <b>${currentLevel}</b>`;
+            modalActions.innerHTML = `<button class="modal-btn secondary" onclick="showHome()">${t('backHome')}</button>` + 
+                (currentLevel < TOTAL_LEVELS ? `<button class="modal-btn" onclick="loadLevel(${currentLevel + 1})">${t('nextLevel')}</button>` : '');
             modalOverlay.style.display = 'flex';
         }
 
         function showStuckModal() {
             if (isLevelComplete) return;
-            playSound('error'); modalTitle.textContent = "哎呀！"; modalTitle.style.color = "#f56565";
-            modalDesc.textContent = `当前剩下的数字好像凑不出 ${TARGET_SUM} 了，重试一次吧？`;
-            modalActions.innerHTML = `<button class="modal-btn secondary" onclick="showHome()">返回首页</button><button class="modal-btn" onclick="restartLevel()">重新挑战</button>`;
+            playSound('error'); modalTitle.textContent = t('stuckTitle'); modalTitle.style.color = "#f56565";
+            modalDesc.textContent = `${t('stuckDesc')}`;
+            modalActions.innerHTML = `<button class="modal-btn secondary" onclick="showHome()">${t('backHome')}</button><button class="modal-btn" onclick="restartLevel()">${t('retry')}</button>`;
             modalOverlay.style.display = 'flex';
         }
 
@@ -941,17 +1051,17 @@
 
         function askAIHelper() {
             playSound('select');
-            modalTitle.textContent = "🤖 魔法精灵来啦"; modalTitle.style.color = "#9f7aea";
-            modalActions.innerHTML = `<button class="modal-btn secondary" onclick="closeModal()">我知道啦</button>`;
+            modalTitle.textContent = t('aiHelperTitle'); modalTitle.style.color = "#9f7aea";
+            modalActions.innerHTML = `<button class="modal-btn secondary" onclick="closeModal()">${t('gotIt')}</button>`;
             
             const validPath = findOneValidPath();
             
             if (validPath) {
-                const hintText = `魔法精灵偷偷观察了一下，发现把 <b>[ ${validPath.join(' + ')} ]</b> 连起来刚好是 ${TARGET_SUM} 哦！✨ 快去试试吧！`;
+                const hintText = t('aiHelperFound').replace('{path}', validPath.join(' + ')).replace('{target}', TARGET_SUM);
                 modalDesc.innerHTML = `<div class="ai-chat-bubble">${hintText}</div>`;
                 playSound('clear');
             } else {
-                modalDesc.innerHTML = `<div class="ai-chat-bubble">哎呀，当前好像没有合适的组合了，也许需要重新开始这一关哦！🤔</div>`;
+                modalDesc.innerHTML = `<div class="ai-chat-bubble">${t('aiHelperNotFound')}</div>`;
                 playSound('error');
             }
             
